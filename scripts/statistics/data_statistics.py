@@ -44,11 +44,11 @@ def get_annotIDs(filename):
 
 	for index, row in data.iterrows():
 
-		if row['annotater_id'] not in annotator_ids:
-			annotator_ids.append(row['annotater_id'])
-			annotator_dict[row['annotater_id']] = 1
+		if row['annotator_id'] not in annotator_ids:
+			annotator_ids.append(row['annotator_id'])
+			annotator_dict[row['annotator_id']] = 1
 		else:
-			annotator_dict[row['annotater_id']] += 1
+			annotator_dict[row['annotator_id']] += 1
 	
 	return annotator_ids, annotator_dict
 

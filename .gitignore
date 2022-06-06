@@ -1,3 +1,5 @@
 data/
 infotabs_env/
+infotabs/
+temp/
 scripts/preprocess/GoogleNews*

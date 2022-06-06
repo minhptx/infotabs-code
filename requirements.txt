@@ -33,7 +33,6 @@ cymem==2.0.6
     #   preshed
     #   spacy
     #   thinc
-dataclasses==0.8
     # via
     #   gensim
     #   pathy

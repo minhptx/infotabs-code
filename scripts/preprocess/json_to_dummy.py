@@ -17,7 +17,6 @@ import random
 def is_date(string):
 	match = re.search('\d{4}-\d{2}-\d{2}', string)
 	if match:
-		date = datetime.datetime.strptime(match.group(), '%Y-%m-%d').date()
 		return True
 	else:
 		return False
@@ -32,7 +31,7 @@ def config(parser):
     parser.add_argument('--json_dir', default="./../../data/tables/json/", type=str)
     parser.add_argument('--data_dir', default="./../../data/infotabs_tsv/", type=str)
     parser.add_argument('--save_dir', default="./../../temp/parapremise/", type=str)
-    parser.add_argument('--splits',default=["train","dev","test_alpha1","test_alpha2","test_alpha3"],  action='store', type=str, nargs='*')
+    parser.add_argument('--splits',default=["train"],  action='store', type=str, nargs='*')
     #parser.add_argument('--multi_gpu_on', action='store_true')
     return parser
 
@@ -58,5 +57,5 @@ if __name__ == "__main__":
 			if row["label"] == "C":
 				label = 2
 			
-			data = [index,row['table_id'],row['annotater_id'],"to be or not to be",row["hypothesis"],label]
+			data = [index,row['table_id'],row['annotator_id'],"to be or not to be",row["hypothesis"],label]
 			write_csv(data,split)

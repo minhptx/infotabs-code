@@ -101,7 +101,7 @@ def train(args):
     else:
         train_data_file = open(args['in_dir']+"train.pkl",'rb')
     dev_data_file = open(args['in_dir']+"dev.pkl",'rb')
-    test_data_file = open(args['in_dir']+"test_alpha1.pkl",'rb')
+    test_data_file = open(args['in_dir']+"dev.pkl",'rb')
 
     # Load processed data
     train_data = pickle.load(train_data_file)
@@ -147,8 +147,10 @@ def train(args):
         start = time.time()
         model.train()
         # Iterate over batches
+
         for batch_ndx,(enc, mask, seg, gold,ids) in enumerate(tqdm(loader)):
             batch_loss = 0
+
             optimizer.zero_grad()
             # Forward-pass
             outputs = model(enc,attention_mask = mask, token_type_ids=seg)
@@ -244,8 +246,8 @@ if __name__ == "__main__":
     torch.manual_seed(current_seed)
 
     if args['mode']=="train":
-    	train(args)
+        train(args)
     elif args['mode'] == "test":
-    	test_data(args)
+        test_data(args)
 
 	

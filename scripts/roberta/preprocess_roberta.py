@@ -9,6 +9,7 @@ import sys
 import time
 import torch
 from transformers import AutoTokenizer
+import pandas as pd
 
 
 def preprocess_config(parser):
@@ -27,7 +28,7 @@ def preprocess_config(parser):
     parser.add_argument('--in_dir', default="parapremise",type=str)
     parser.add_argument('--out_dir',default="../processed/parapremise",type=str)
     parser.add_argument('--single_sentence', default=0,type=int)
-    parser.add_argument('--splits',default=["train","dev","test_alpha1","test_alpha2","test_alpha3"],  action='store', type=str, nargs='*')
+    parser.add_argument('--splits',default=["train"],  action='store', type=str, nargs='*')
     parser.add_argument('--tokenizer_type',default="roberta-base", type=str, help='Value should be from the HuggingFace Transformers model classes - https://huggingface.co/transformers/pretrained_models.html')
         
     return parser
@@ -51,20 +52,17 @@ def load_sentences(file, skip_first=True, single_sentence=False):
                     bias experiment), and the NLI label for the pair
     """
     rows = []
-    with open(file, encoding="ISO-8859-1") as f:
-        for line in f:
-            if skip_first:
-                skip_first = False
-                continue
-            blocks = line.strip().split('\t')   # Converts to list
-            
-            # Takes the relevant elements of the row necessary. Putting them in a dict,
-            lab = int(blocks[-1])
-            if single_sentence:
-                sample = {'uid': int(blocks[0]), 'hypothesis': blocks[4], 'label': lab}
-            else:   
-                sample = {'uid': int(blocks[0]), 'premise': blocks[3], 'hypothesis': blocks[4], 'label': lab}
-            rows.append(sample) # Append the loaded sample
+    print(file)
+    df = pd.read_csv(file, sep="\t")
+    for idx, row in df.iterrows():           
+        # Takes the relevant elements of the row necessary. Putting them in a dict,
+        print(row)
+        if single_sentence:
+            sample = {'uid': row["annotator_id"], 'hypothesis': row["hypothesis"], 'label': int(row["label"])}
+        else:
+            sample = {'uid': row["index"], 'hypothesis': row["hypothesis"], 'premise': row['premise'], 'label': int(row["label"])}
+
+        rows.append(sample) # Append the loaded sample
     return rows
 
 
@@ -80,6 +78,7 @@ if __name__ == "__main__":
     for split in args["splits"]:
         data[split] = load_sentences(args['data_dir']+args['in_dir']+"/"+split+".tsv",
                                     single_sentence=args['single_sentence'])
+        
         print("{} {} samples loaded".format(len(data[split]),split))
 
     # Name of the folder where processed data will be stored
@@ -93,8 +92,8 @@ if __name__ == "__main__":
         os.mkdir(folder_name)
     elif len(os.listdir(folder_name)) != 0:
         char = input("""\nThere are existing files in your save directory.\nThis may overwrite data if a split name coincides with a file name. Do you wish to continue? [y/n]: """)
-        if char != "y" and char !="Y":
-            exit()
+        # if char != "y" and char !="Y":
+        #     exit()
 
     # Intializing Tokenizer
     new_tokenizer = AutoTokenizer.from_pretrained(args['tokenizer_type'])
@@ -113,8 +112,11 @@ if __name__ == "__main__":
             # If there are more than 504 sub-word tokens, sub-word tokens will be dropped from
             # the end of the longest sequence in the two (most likely the premise)
             if args['single_sentence']:
+                pt_dict['hypothesis'] = str(pt_dict['hypothesis'])
                 encoded_inps = new_tokenizer(pt_dict['hypothesis'],padding='max_length', truncation=True, max_length=504)
             else:
+                pt_dict['hypothesis'] = str(pt_dict['hypothesis'])
+                pt_dict['premise'] = str(pt_dict['premise'])
                 encoded_inps = new_tokenizer(pt_dict['premise'],pt_dict['hypothesis'],padding='max_length', truncation=True, max_length=504)
            
             # Some models do not return token_type_ids and hence
